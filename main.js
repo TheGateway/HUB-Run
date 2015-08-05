@@ -20,7 +20,7 @@
     }(document, 'script', 'facebook-jssdk'));
     
     // boot loading state
-    var boot, preload, hubRun, mainMenu;
+    var boot, preload, hubRun;
     
     boot = function (game) {
         console.log("%cWelcome to HUB Run!", "font-size:24px;color:white; background:red");
@@ -75,18 +75,6 @@
             this.game.state.start("HubRun");
         }
     };
-    
-    mainMenu = function (game) {
-        
-    }
-    
-    mainMenu.prototype = {
-        create: function() {
-            
-            
-        }
-    }
-    
     
     // The game state
     
