@@ -30,9 +30,6 @@
     };
 
     boot.prototype = {
-        preload: function () {
-//              this.game.load.image("loading","assets/"); 
-        },
         create: function () {
             this.game.scale.maxWidth = 750;
             this.game.scale.maxHeight = 500;
@@ -49,9 +46,6 @@
 
     preload.prototype = {
         preload: function () {
-//            var loadingBar = this.add.sprite(160,240,"loading");
-//            loadingBar.anchor.setTo(0.5,0.5);
-//            this.load.setPreloadSprite(loadingBar);
             this.game.load.image('background', 'assets/sprites/hub-mall.png');
             this.game.load.image('logo', 'assets/sprites/hubrun_sign_1.png');
             this.game.load.image('facebook', 'assets/sprites/facebook.png');
