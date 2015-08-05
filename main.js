@@ -20,7 +20,69 @@
     }(document, 'script', 'facebook-jssdk'));
     
     // boot loading state
-    var boot, preload, hubRun;
+    var boot, preload, hubRun, mainMenu, gameOverMenu,
+        game, settings, smallFont;
+    
+    game = new Phaser.Game(1500, 1000, Phaser.AUTO, "HUB Run");
+    smallFont = { font: 'Bold 72px Silkscreen', fill: 'white', stroke: 'black', strokeThickness: '9' };
+    
+    settings = {
+        musicPlaying: true,
+        playerTexture: 'player_m'
+    };
+    
+    // Calculates the score.
+    function calcScore(score) {
+        return Math.round(score / 10);
+    }
+    
+    // Sets up music and player texture toggling for states.
+    function toggleControls (music, player) {
+        var startButton, characterButton;
+        
+        characterButton = game.input.keyboard.addKey(Phaser.Keyboard.X);
+        musicButton = game.input.keyboard.addKey(Phaser.Keyboard.M);
+        
+        function changeMusic() {
+             settings.musicPlaying = !settings.musicPlaying;
+
+            if (settings.musicPlaying) {
+                music.play();
+            } else {
+                music.stop();
+            }
+        }
+        
+        function changeTexture() {
+            if(!player) {
+                return;
+            }
+            
+            if(settings.playerTexture === 'player_m') {   
+                settings.playerTexture = 'player_f';
+            } else {
+                settings.playerTexture = 'player_m';
+            }   
+            
+            if(player)
+                player.loadTexture(settings.playerTexture);
+        };
+        
+        characterButton.onDown.add(changeTexture);
+        musicButton.onDown.add(changeMusic);
+        
+        if(player) {
+            player.loadTexture(settings.playerTexture);
+        }
+        
+        if (settings.musicPlaying) {
+            music.play();
+        } else {
+            music.stop();
+        }
+    };
+    
+    // Initial boot state
     
     boot = function (game) {
         console.log("%cWelcome to HUB Run!", "font-size:24px;color:white; background:red");
@@ -40,7 +102,7 @@
         }
     };
     
-    // preload state
+    // Preload state
     
     preload = function (game) {};
 
@@ -50,6 +112,7 @@
             this.game.load.image('logo', 'assets/sprites/hubrun_sign_1.png');
             this.game.load.image('facebook', 'assets/sprites/facebook.png');
             this.game.load.image('twitter', 'assets/sprites/twitter.png');
+            
             this.game.load.spritesheet('player_m', 'assets/sprites/pc_male_spritesheet.png', 144, 170);
             this.game.load.spritesheet('player_f', 'assets/sprites/pc_female_spritesheet.png', 144, 170);
             this.game.load.spritesheet('enemy1', 'assets/sprites/npc_f_b_spritesheet.png', 144, 170);
@@ -62,67 +125,150 @@
 
             this.game.load.audio('gamemusic', 'assets/audio/Den Nye Profeten-sieken.mp3');
             this.game.load.audio('menumusic', 'assets/audio/Hoffipolka Chiptune-mpyuri.mp3');
-
-            
         },
         create: function () {
-            this.game.state.start("HubRun");
+            this.game.state.start("MainMenu");
         }
     };
     
-    // The game state
+    // Main Menu state
     
-    hubRun = function (game) {
-        var enemyCounter = 0, score,
-            logo, player, cursors, background, run,
-            playerTexture, bigFont,
-            facebookButton, twitterButton,
-            playText, scoreText, scoredText, restartText,
-            menuMusic, gameMusic,
-            downEnemies, upEnemies,
-            bottomBoundbox, topBoundbox, boundboxes,
-            musicPlaying,
-            spawnFactors = [80];
-    };
-
-    hubRun.prototype = {
-        create: function () {
-            var leftBoundbox, rightBoundbox,
-                startButton, characterButton, musicButton, creditsButton;
-            
-            score = 0;
-            run = false;
-            playerTexture = 'player_m';
-            musicPlaying = true;
-
-            bigFont = { font: 'Bold 128px Silkscreen', fill: 'white', stroke: 'black', strokeThickness: '9' };
-            smallFont = { font: 'Bold 72px Silkscreen', fill: 'white', stroke: 'black', strokeThickness: '9' };
+    mainMenu = function (game) {
+        var playText, menuMusic;
+    }
+    
+    mainMenu.prototype = {
+        create: function() {
+            var musicButton, creditsButton, 
+                player, logo, background;
 
             background = game.add.tileSprite(0, 0, 1500, 1000, 'background');
-            player = game.add.sprite(game.world.width / 2 + 200, game.world.height - 300, playerTexture);
-            scoreText = game.add.text(game.world.width / 2 - 60, 16, score + "", bigFont);
             playText = game.add.group();
-            restartText = game.add.group();
-            boundboxes = game.add.group();
-            downEnemies = game.add.group();
-            upEnemies = game.add.group();
-
             logo = game.add.sprite(game.width / 2 - 180, 10, 'logo');
-
+            player = game.add.sprite(game.world.width / 2 + 200, game.world.height - 300, null);
+            
+            startButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+            creditsButton = game.input.keyboard.addKey(Phaser.Keyboard.C);
+            
             menuMusic = game.add.audio('menumusic', 1, true);
-            gameMusic = game.add.audio('gamemusic', 0.6, true);
 
-            cursors = game.input.keyboard.createCursorKeys();
-
+            startButton.onDown.add(this.startGame);
+            creditsButton.onDown.add(this.showCredits);
+            
+            toggleControls(menuMusic, player);
+            
             playText.add(game.add.text(game.world.width / 2 - 258, 440, 'Space - Start ', smallFont));
             playText.add(game.add.text(game.world.width / 2 - 515, 530, 'Arrow Keys - Move ', smallFont));
             playText.add(game.add.text(270, 670, 'X - Character ', smallFont));
             playText.add(game.add.text(270, 760, 'M - Music ', smallFont));
             playText.add(game.add.text(270, 850, 'C - Credits ', smallFont));
+        },
+        showCredits: function () {
+            // TODO
+        }, 
+        startGame: function () {  
+            menuMusic.stop();
+            game.state.start("HubRun");
+        }
+    }
+    
+    // Game Over state
+    
+    gameOverMenu = function (game) {
+        var facebookButton, twitterButton,
+            scoredText, restartText,
+            menuMusic;
+    }
+    
+    gameOverMenu.prototype = {
+        create: function() {
+            
+            var logo, background, 
+                twitterButton, facebookButton, startButton;
+            
+            background = game.add.tileSprite(0, 0, 1500, 1000, 'background');
+            logo = game.add.sprite(game.width / 2 - 180, 10, 'logo');
+            restartText = game.add.group();
+            
+            menuMusic = game.add.audio('menumusic', 1, true);
 
-            restartText.add(scoredText = game.add.text(game.world.width / 2 - 300, 440, '', smallFont));
+            toggleControls(menuMusic);
+            
+            restartText.add(game.add.text(game.world.width / 2 - 300, 440, 'Score : ' + calcScore(score) + ' ', smallFont));
             restartText.add(game.add.text(game.world.width / 2 - 300, 530, 'Space - Restart ', smallFont));
             restartText.add(game.add.text(game.world.width / 2 - 300, 650, 'Share your score! ', smallFont));
+            
+            twitterButton = game.add.button(game.world.centerX - 95, 850, 'twitter', this.twitterClick, this, 2, 1, 0);
+
+            twitterButton.onInputOver.add(this.buttonOver, this);
+            twitterButton.onInputOut.add(this.buttonOut, this);
+            twitterButton.anchor.setTo(0.5, 0.5);
+
+            facebookButton = game.add.button(game.world.centerX + 115, 850, 'facebook', this.facebookClick, this, 2, 1, 0);
+
+            facebookButton.onInputOver.add(this.buttonOver, this);
+            facebookButton.onInputOut.add(this.buttonOut, this);
+            facebookButton.anchor.setTo(0.5, 0.5);
+            
+            startButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+
+            startButton.onDown.add(this.startGame);
+        }, 
+        startGame: function () {  
+            menuMusic.stop();
+            game.state.start("HubRun");
+        },
+        twitterClick: function () {
+            window.open('https://twitter.com/intent/tweet?text=I%20ran%20' + calcScore(score) + '%20steps%20in%20@The_Gateway\'s%20%23HUBRun!%20Try%20to%20beat%20me%20at%20http://gtwy.ca/hubrun.%20%23UAlberta', '_blank');
+        },
+        facebookClick: function () {
+            FB.ui({
+                method: 'share',
+                href: 'https://thegatewayonline.ca/hubrun',
+                description: "I ran " + calcScore(score) + " steps in The Gateway's HUB Run Game! Can you beat me?"
+            }, function (response) {});
+        },
+        buttonOver: function (button) {
+            button.scale.setTo(1.1, 1.1);
+        },
+        buttonOut: function (button) {
+            button.scale.setTo(1.0, 1.0);
+        }
+    }
+    
+    // Gameplay state
+    
+    hubRun = function (game) {
+        var enemyCounter = 0, score,
+            player, cursors, background,
+            bigFont,
+            scoreText,
+            gameMusic,
+            downEnemies, upEnemies,
+            bottomBoundbox, topBoundbox, boundboxes;
+        
+    };
+
+    hubRun.prototype = {
+        create: function () {
+            var leftBoundbox, rightBoundbox;
+            this.spawnFactors = [80];
+            score = 0;
+
+            bigFont = { font: 'Bold 128px Silkscreen', fill: 'white', stroke: 'black', strokeThickness: '9' };
+
+            background = game.add.tileSprite(0, 0, 1500, 1000, 'background');
+            player = game.add.sprite(game.world.width / 2 + 200, game.world.height - 300, null);
+            scoreText = game.add.text(game.world.width / 2 - 60, 16, score + "", bigFont);
+            boundboxes = game.add.group();
+            downEnemies = game.add.group();
+            upEnemies = game.add.group();
+
+            gameMusic = game.add.audio('gamemusic', 0.6, true);
+            
+            cursors = game.input.keyboard.createCursorKeys();
+
+            toggleControls(gameMusic, player);
 
             game.physics.startSystem(Phaser.Physics.ARCADE);
             game.physics.arcade.enable(player);
@@ -147,115 +293,6 @@
 
             downEnemies.enableBody = true;
             upEnemies.enableBody = true;
-
-            startButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-            characterButton = game.input.keyboard.addKey(Phaser.Keyboard.X);
-            musicButton = game.input.keyboard.addKey(Phaser.Keyboard.M);
-            creditsButton = game.input.keyboard.addKey(Phaser.Keyboard.C);
-
-            startButton.onDown.add(this.startGame);
-            characterButton.onDown.add(this.changeCharacter);
-            musicButton.onDown.add(this.toggleMusic);
-            creditsButton.onDown.add(this.showCredits);
-
-            twitterButton = game.add.button(game.world.centerX - 95, 850, 'twitter', this.twitterClick, this, 2, 1, 0);
-
-            twitterButton.onInputOver.add(this.buttonOver, this);
-            twitterButton.onInputOut.add(this.buttonOut, this);
-            twitterButton.anchor.setTo(0.5, 0.5);
-
-            facebookButton = game.add.button(game.world.centerX + 115, 850, 'facebook', this.facebookClick, this, 2, 1, 0);
-
-            facebookButton.onInputOver.add(this.buttonOver, this);
-            facebookButton.onInputOut.add(this.buttonOut, this);
-            facebookButton.anchor.setTo(0.5, 0.5);
-
-            twitterButton.visible = false;
-            facebookButton.visible = false;
-            restartText.visible = false;
-
-            if (musicPlaying) {
-                menuMusic.play();
-            }
-        },
-        toggleMusic: function () {
-            musicPlaying = !musicPlaying;
-
-            if (musicPlaying) {
-                if (run) {
-                    gameMusic.play();
-                } else {
-                    menuMusic.play();
-                }
-            } else {
-                menuMusic.stop();
-                gameMusic.stop();
-            }
-        },
-        showCredits: function () {
-
-        },
-        twitterClick: function () {
-            window.open('https://twitter.com/intent/tweet?text=I%20ran%20' + this.calcScore() + '%20steps%20in%20@The_Gateway\'s%20%23HUBRun!%20Try%20to%20beat%20me%20at%20http://gtwy.ca/hubrun.%20%23UAlberta', '_blank');
-        },
-        facebookClick: function () {
-            FB.ui({
-                method: 'share',
-                href: 'https://thegatewayonline.ca/hubrun',
-                description: "I ran " + this.calcScore() + " steps in The Gateway's HUB Run Game! Can you beat me?"
-            }, function (response) {});
-        },
-        buttonOver: function (button) {
-            button.scale.setTo(1.1, 1.1);
-        },
-        buttonOut: function (button) {
-            button.scale.setTo(1.0, 1.0);
-        },
-        startGame: function () {
-            if (run) {
-                return;
-            }
-
-            score = 0;
-            spawnFactors = [80];
-
-            player.x = game.world.width / 2 + 200;
-            player.y = game.world.height - 300;
-
-            logo.visible = false;
-            playText.visible = false;
-            restartText.visible = false;
-            facebookButton.visible = false;
-            twitterButton.visible = false;
-
-            run = true;
-
-            if(musicPlaying) {
-                menuMusic.stop();
-                gameMusic.play();
-            }
-        },
-        endGame: function () {
-            run = false;
-
-            restartText.visible = true;
-            logo.visible = true;
-            facebookButton.visible = true;
-            twitterButton.visible = true;
-            scoredText.setText('Score : ' + this.calcScore() + ' ');
-
-            if(musicPlaying) {
-                gameMusic.stop();
-                menuMusic.play();
-            }
-        },
-        changeCharacter: function () {
-            if(playerTexture === 'player_m') {   
-                playerTexture = 'player_f';
-            } else {
-                playerTexture = 'player_m';
-            }
-            player.loadTexture(playerTexture);
         },
         playerEnemyCollision: function  () {
             player.body.velocity.y = arguments[1].body.velocity.y / 2;
@@ -289,7 +326,7 @@
             }
 
             tween.onComplete.add(this.removeEnemy);
-                tween.start();
+            tween.start();
 
             return enemy;
         },
@@ -320,16 +357,12 @@
             player.body.velocity.x = 0;
             player.body.velocity.y = 0;
 
-            if(!run) {
-                return;
-            }
-
             if(score > 0) {
                 if(score % 600 === 0) {
-                    var newSpawnFactor = 80 - spawnFactors.length * 10;
+                    var newSpawnFactor = 80 - this.spawnFactors.length * 10;
 
                     if(newSpawnFactor > 0) {
-                        spawnFactors.push(newSpawnFactor);
+                        this.spawnFactors.push(newSpawnFactor);
                     }
 
                     this.spawnRunner();
@@ -344,11 +377,11 @@
                 }
             }
 
-            if(this.shouldSpawn(spawnFactors)) {
+            if(this.shouldSpawn(this.spawnFactors)) {
                 this.spawnTop();
             }
 
-            if(this.shouldSpawn(spawnFactors.map(function (num) { return num * (5/2); }))) {
+            if(this.shouldSpawn(this.spawnFactors.map(function (num) { return num * (5/2); }))) {
                 this.spawnBottom();
             }
 
@@ -382,29 +415,23 @@
             score += 1;
 
             if(score % 10 == 0) {
-                scoreText.text = this.calcScore();
+                scoreText.text = calcScore(score);
             }
-        },
-        calcScore: function () {
-            return Math.round(score / 10);
         },
         removeEnemy: function (enemy) {
             enemy.kill();
             this.enemyCounter--;
         },
-        gameOver: function (bottomBoundbox, player) {
-            this.endGame();
+        gameOver: function () {
+            gameMusic.stop();
+            game.state.start("GameOver");
         }
     };
 
-    // Wrapped in a function to make variables private.
-    var game = new Phaser.Game(1500, 1000, Phaser.AUTO, "HUB Run");
-    
-    
     game.state.add("Boot", boot);
     game.state.add("Preload", preload);
+    game.state.add("MainMenu",mainMenu);
     game.state.add("HubRun",hubRun);
+    game.state.add("GameOver", gameOverMenu);
     game.state.start("Boot");
-
-    
 })();
