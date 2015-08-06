@@ -21,9 +21,20 @@
     
     // boot loading state
     var boot, preload, hubRun, mainMenu, gameOverMenu,
-        game, settings, smallFont;
+        game, settings, smallFont,
+        scripts, scriptdir;
     
-    game = new Phaser.Game(1500, 1000, Phaser.AUTO, "HUB Run");
+    scripts = document.getElementsByTagName('script');
+    
+    for (i = 0; i < scripts.length; i++) {
+        if (scripts[i].src.indexOf("hubrun.js") > -1) {
+            path = scripts[scripts.length - 2].src.split('?')[0];
+            scriptdir = path.split('/').slice(0, -1).join('/') + '/';
+            break;
+        }
+    }
+    
+    game = new Phaser.Game(1500, 1000, Phaser.AUTO, 'hub-run');
     smallFont = { font: 'Bold 72px Silkscreen', fill: 'white', stroke: 'black', strokeThickness: '9' };
     
     settings = {
@@ -134,24 +145,24 @@
 
     preload.prototype = {
         preload: function () {
-            this.game.load.image('background', 'assets/sprites/hub-mall.png');
-            this.game.load.image('logo', 'assets/sprites/hubrun_sign_1.png');
-            this.game.load.image('facebook', 'assets/sprites/facebook.png');
-            this.game.load.image('twitter', 'assets/sprites/twitter.png');
-            this.game.load.image('gateway_small', 'assets/sprites/gateway-small.png');
+            this.game.load.image('background', scriptdir + 'assets/sprites/hub-mall.png');
+            this.game.load.image('logo', scriptdir + 'assets/sprites/hubrun_sign_1.png');
+            this.game.load.image('facebook', scriptdir + 'assets/sprites/facebook.png');
+            this.game.load.image('twitter', scriptdir + 'assets/sprites/twitter.png');
+            this.game.load.image('gateway_small', scriptdir + 'assets/sprites/gateway-small.png');
             
-            this.game.load.spritesheet('player_m', 'assets/sprites/pc_male_spritesheet.png', 144, 170);
-            this.game.load.spritesheet('player_f', 'assets/sprites/pc_female_spritesheet.png', 144, 170);
-            this.game.load.spritesheet('enemy1', 'assets/sprites/npc_f_b_spritesheet.png', 144, 170);
-            this.game.load.spritesheet('enemy2', 'assets/sprites/npc_f_r_spritesheet.png', 144, 170);
-            this.game.load.spritesheet('enemy3', 'assets/sprites/npc_f_y_spritesheet.png', 144, 170);
-            this.game.load.spritesheet('enemy4', 'assets/sprites/npc_m_b_spritesheet.png', 144, 170);
-            this.game.load.spritesheet('enemy5', 'assets/sprites/npc_m_r_spritesheet.png', 144, 170);
-            this.game.load.spritesheet('enemy6', 'assets/sprites/npc_m_y_spritesheet.png', 144, 170);
-            this.game.load.spritesheet('runner', 'assets/sprites/running_guy_spritesheet.png', 144, 170);
+            this.game.load.spritesheet('player_m', scriptdir + 'assets/sprites/pc_male_spritesheet.png', 144, 170);
+            this.game.load.spritesheet('player_f', scriptdir + 'assets/sprites/pc_female_spritesheet.png', 144, 170);
+            this.game.load.spritesheet('enemy1', scriptdir + 'assets/sprites/npc_f_b_spritesheet.png', 144, 170);
+            this.game.load.spritesheet('enemy2', scriptdir + 'assets/sprites/npc_f_r_spritesheet.png', 144, 170);
+            this.game.load.spritesheet('enemy3', scriptdir + 'assets/sprites/npc_f_y_spritesheet.png', 144, 170);
+            this.game.load.spritesheet('enemy4', scriptdir + 'assets/sprites/npc_m_b_spritesheet.png', 144, 170);
+            this.game.load.spritesheet('enemy5', scriptdir + 'assets/sprites/npc_m_r_spritesheet.png', 144, 170);
+            this.game.load.spritesheet('enemy6', scriptdir + 'assets/sprites/npc_m_y_spritesheet.png', 144, 170);
+            this.game.load.spritesheet('runner', scriptdir + 'assets/sprites/running_guy_spritesheet.png', 144, 170);
 
-            this.game.load.audio('gamemusic', 'assets/audio/Den Nye Profeten-sieken.mp3');
-            this.game.load.audio('menumusic', 'assets/audio/Hoffipolka Chiptune-mpyuri.mp3');
+            this.game.load.audio('gamemusic', scriptdir + 'assets/audio/Den Nye Profeten-sieken.mp3');
+            this.game.load.audio('menumusic', scriptdir + 'assets/audio/Hoffipolka Chiptune-mpyuri.mp3');
         },
         create: function () {
             this.game.state.start("MainMenu");
