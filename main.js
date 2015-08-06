@@ -37,14 +37,14 @@
     }
     
     // Sets up music and player texture toggling for states.
-    function toggleControls (music, player) {
-        var startButton, characterButton;
+    function toggleControls(music, player) {
+        var musicButton, characterButton;
         
         characterButton = game.input.keyboard.addKey(Phaser.Keyboard.X);
         musicButton = game.input.keyboard.addKey(Phaser.Keyboard.M);
         
         function changeMusic() {
-             settings.musicPlaying = !settings.musicPlaying;
+            settings.musicPlaying = !settings.musicPlaying;
 
             if (settings.musicPlaying) {
                 music.play();
@@ -54,24 +54,25 @@
         }
         
         function changeTexture() {
-            if(!player) {
+            if (!player) {
                 return;
             }
             
-            if(settings.playerTexture === 'player_m') {   
+            if (settings.playerTexture === 'player_m') {
                 settings.playerTexture = 'player_f';
             } else {
                 settings.playerTexture = 'player_m';
-            }   
+            }
             
-            if(player)
+            if (player) {
                 player.loadTexture(settings.playerTexture);
-        };
+            }
+        }
         
         characterButton.onDown.add(changeTexture);
         musicButton.onDown.add(changeMusic);
         
-        if(player) {
+        if (player) {
             player.loadTexture(settings.playerTexture);
         }
         
@@ -80,7 +81,32 @@
         } else {
             music.stop();
         }
-    };
+    }
+    
+    function createButton(x, y, sprite, action) {
+        var button = game.add.button(x, y,  sprite, action, this, 2, 1, 0);
+        
+        button.anchor.setTo(0.5, 0.5);
+        
+        button.onInputOver.add(function (button) {
+            button.scale.setTo(1.1, 1.1);
+        }, this);
+        button.onInputOut.add(function (button) {
+            button.scale.setTo(1.0, 1.0);
+        }, this);
+        
+        return button;
+    }
+    
+    function createGatewayButton() {
+        var gateway = createButton(game.width, game.height,  'gateway_small',  function () {
+            window.open("http://thegatewayonline.ca", "_blank");
+        });
+        
+        gateway.anchor.setTo(1.0, 1.0);
+        
+        return gateway;
+    }
     
     // Initial boot state
     
@@ -112,6 +138,7 @@
             this.game.load.image('logo', 'assets/sprites/hubrun_sign_1.png');
             this.game.load.image('facebook', 'assets/sprites/facebook.png');
             this.game.load.image('twitter', 'assets/sprites/twitter.png');
+            this.game.load.image('gateway_small', 'assets/sprites/gateway-small.png');
             
             this.game.load.spritesheet('player_m', 'assets/sprites/pc_male_spritesheet.png', 144, 170);
             this.game.load.spritesheet('player_f', 'assets/sprites/pc_female_spritesheet.png', 144, 170);
@@ -134,17 +161,20 @@
     // Main Menu state
     
     mainMenu = function (game) {
-        var playText, menuMusic;
-    }
+        var menuMusic, player, creditsShowing = false;
+    };
     
     mainMenu.prototype = {
-        create: function() {
-            var musicButton, creditsButton, 
-                player, logo, background;
+        create: function () {
+            var musicButton, creditsButton, startButton,
+                logo, background, credits, gateway,
+                playText;
 
             background = game.add.tileSprite(0, 0, 1500, 1000, 'background');
             playText = game.add.group();
             logo = game.add.sprite(game.width / 2 - 180, 10, 'logo');
+            gateway = createGatewayButton();
+
             player = game.add.sprite(game.world.width / 2 + 200, game.world.height - 300, null);
             
             startButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -152,8 +182,10 @@
             
             menuMusic = game.add.audio('menumusic', 1, true);
 
-            startButton.onDown.add(this.startGame);
-            creditsButton.onDown.add(this.showCredits);
+            startButton.onDown.add(function () {
+                menuMusic.stop();
+                game.state.start("HubRun");
+            });
             
             toggleControls(menuMusic, player);
             
@@ -161,33 +193,24 @@
             playText.add(game.add.text(game.world.width / 2 - 515, 530, 'Arrow Keys - Move ', smallFont));
             playText.add(game.add.text(270, 670, 'X - Character ', smallFont));
             playText.add(game.add.text(270, 760, 'M - Music ', smallFont));
-            playText.add(game.add.text(270, 850, 'C - Credits ', smallFont));
-        },
-        showCredits: function () {
-            // TODO
-        }, 
-        startGame: function () {  
-            menuMusic.stop();
-            game.state.start("HubRun");
         }
-    }
+    };
     
     // Game Over state
     
     gameOverMenu = function (game) {
-        var facebookButton, twitterButton,
-            scoredText, restartText,
-            menuMusic;
-    }
+        var menuMusic;
+    };
     
     gameOverMenu.prototype = {
-        create: function() {
-            
-            var logo, background, 
+        create: function () {
+            var logo, background, restartText, creditText, smallerFont,
                 twitterButton, facebookButton, startButton;
             
             background = game.add.tileSprite(0, 0, 1500, 1000, 'background');
             logo = game.add.sprite(game.width / 2 - 180, 10, 'logo');
+            smallerFont = { font: 'Bold 24px Silkscreen', fill: 'white', stroke: 'black', strokeThickness: '6' };
+            creditText = game.add.group();
             restartText = game.add.group();
             
             menuMusic = game.add.audio('menumusic', 1, true);
@@ -198,52 +221,44 @@
             restartText.add(game.add.text(game.world.width / 2 - 300, 530, 'Space - Restart ', smallFont));
             restartText.add(game.add.text(game.world.width / 2 - 300, 650, 'Share your score! ', smallFont));
             
-            twitterButton = game.add.button(game.world.centerX - 95, 850, 'twitter', this.twitterClick, this, 2, 1, 0);
+            creditText.add(game.add.text(190, 820, 'Code: Kevin Schenk ', smallerFont));
+            creditText.add(game.add.text(190, 850, 'Art: Jessica Hong ', smallerFont));
+            creditText.add(game.add.text(190, 890, 'Menu Music: mpyuri CC-BY ', smallerFont));
+            creditText.add(game.add.text(190, 920, 'Game Music: sieken CC-BY ', smallerFont));
+            creditText.add(game.add.text(190, 960, 'Built with Phaser ', smallerFont));
+            
+            twitterButton = createButton(game.world.centerX - 95, 850, 'twitter', function () {
+                window.open('https://twitter.com/intent/tweet?text=I%20ran%20' +
+                            calcScore(score) + '%20steps%20in%20@The_Gateway\'s%20%23HUBRun!%20' +
+                            'Try%20to%20beat%20me%20at%20http://gtwy.ca/hubrun.%20%23UAlberta',
+                            '_blank');
+            });
+            
+            facebookButton = createButton(game.world.centerX + 115, 850, 'facebook', function () {
+                FB.ui({
+                    method: 'share',
+                    href: 'https://thegatewayonline.ca/hubrun',
+                    description: "I ran " + calcScore(score) + " steps in The Gateway's HUB Run Game! Can you beat me?"
+                }, function (response) {});
+            });
 
-            twitterButton.onInputOver.add(this.buttonOver, this);
-            twitterButton.onInputOut.add(this.buttonOut, this);
-            twitterButton.anchor.setTo(0.5, 0.5);
-
-            facebookButton = game.add.button(game.world.centerX + 115, 850, 'facebook', this.facebookClick, this, 2, 1, 0);
-
-            facebookButton.onInputOver.add(this.buttonOver, this);
-            facebookButton.onInputOut.add(this.buttonOut, this);
-            facebookButton.anchor.setTo(0.5, 0.5);
+            createGatewayButton();
             
             startButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
-            startButton.onDown.add(this.startGame);
-        }, 
-        startGame: function () {  
-            menuMusic.stop();
-            game.state.start("HubRun");
-        },
-        twitterClick: function () {
-            window.open('https://twitter.com/intent/tweet?text=I%20ran%20' + calcScore(score) + '%20steps%20in%20@The_Gateway\'s%20%23HUBRun!%20Try%20to%20beat%20me%20at%20http://gtwy.ca/hubrun.%20%23UAlberta', '_blank');
-        },
-        facebookClick: function () {
-            FB.ui({
-                method: 'share',
-                href: 'https://thegatewayonline.ca/hubrun',
-                description: "I ran " + calcScore(score) + " steps in The Gateway's HUB Run Game! Can you beat me?"
-            }, function (response) {});
-        },
-        buttonOver: function (button) {
-            button.scale.setTo(1.1, 1.1);
-        },
-        buttonOut: function (button) {
-            button.scale.setTo(1.0, 1.0);
+            startButton.onDown.add(function () {
+                menuMusic.stop();
+                game.state.start("HubRun");
+            });
         }
-    }
+    };
     
     // Gameplay state
     
     hubRun = function (game) {
-        var enemyCounter = 0, score,
+        var enemyCounter, score,
             player, cursors, background,
-            bigFont,
-            scoreText,
-            gameMusic,
+            scoreText, gameMusic,
             downEnemies, upEnemies,
             bottomBoundbox, topBoundbox, boundboxes;
         
@@ -253,13 +268,13 @@
         create: function () {
             var leftBoundbox, rightBoundbox;
             this.spawnFactors = [80];
+            
             score = 0;
-
-            bigFont = { font: 'Bold 128px Silkscreen', fill: 'white', stroke: 'black', strokeThickness: '9' };
+            enemyCounter = 0;
 
             background = game.add.tileSprite(0, 0, 1500, 1000, 'background');
             player = game.add.sprite(game.world.width / 2 + 200, game.world.height - 300, null);
-            scoreText = game.add.text(game.world.width / 2 - 60, 16, score + "", bigFont);
+            scoreText = game.add.text(game.world.width / 2 - 60, 16, score + "", { font: 'Bold 128px Silkscreen', fill: 'white', stroke: 'black', strokeThickness: '9' });
             boundboxes = game.add.group();
             downEnemies = game.add.group();
             upEnemies = game.add.group();
@@ -294,15 +309,12 @@
             downEnemies.enableBody = true;
             upEnemies.enableBody = true;
         },
-        playerEnemyCollision: function  () {
-            player.body.velocity.y = arguments[1].body.velocity.y / 2;
-        },
         spawn: function (enemyGroup, x, y, spriteName, speedFactor) {
-            if(spriteName === undefined) {
-                spriteName = 'enemy' + game.rnd.integerInRange(1, 6);   
+            if (spriteName === undefined) {
+                spriteName = 'enemy' + game.rnd.integerInRange(1, 6);
             }
 
-            if(speedFactor === undefined) {
+            if (speedFactor === undefined) {
                 speedFactor = 1;
             }
 
@@ -317,12 +329,12 @@
 
             if (y < 0) {
                 // spawned top
-                tween = game.add.tween(enemy).to({x:x, y:game.height + 300}, 2000 * speedFactor);
+                tween = game.add.tween(enemy).to({x: x, y: game.height + 300}, 2000 * speedFactor);
                 enemy.anchor.setTo(1, 0.5);
                 enemy.scale.y = -1;
             } else {
                 // spawned bottom
-                tween = game.add.tween(enemy).to({x:x, y: -300}, 5000 * speedFactor);
+                tween = game.add.tween(enemy).to({x: x, y: -300}, 5000 * speedFactor);
             }
 
             tween.onComplete.add(this.removeEnemy);
@@ -346,8 +358,9 @@
             this.spawn(upEnemies, game.rnd.integerInRange(300, (game.width / 2) - 30), game.height + 100);
         },
         shouldSpawn: function (spawnFactors) {
-            for(var i = 0; i < spawnFactors.length; i++) {
-                if(score % spawnFactors[i] == 0) {
+            var i;
+            for (i = 0; i < spawnFactors.length; i++) {
+                if (score % spawnFactors[i] === 0) {
                     return true;
                 }
             }
@@ -357,19 +370,19 @@
             player.body.velocity.x = 0;
             player.body.velocity.y = 0;
 
-            if(score > 0) {
-                if(score % 600 === 0) {
+            if (score > 0) {
+                if (score % 600 === 0) {
                     var newSpawnFactor = 80 - this.spawnFactors.length * 10;
 
-                    if(newSpawnFactor > 0) {
+                    if (newSpawnFactor > 0) {
                         this.spawnFactors.push(newSpawnFactor);
                     }
-
+                    
                     this.spawnRunner();
                 }
 
-                if(score % 200 === 0) {
-                    if(game.rnd.integerInRange(0, 1) === 0) {
+                if (score % 200 === 0) {
+                    if (game.rnd.integerInRange(0, 1) === 0) {
                         this.spawnTopWrong();
                     } else {
                         this.spawnBottomWrong();
@@ -377,11 +390,11 @@
                 }
             }
 
-            if(this.shouldSpawn(this.spawnFactors)) {
+            if (this.shouldSpawn(this.spawnFactors)) {
                 this.spawnTop();
             }
 
-            if(this.shouldSpawn(this.spawnFactors.map(function (num) { return num * (5/2); }))) {
+            if (this.shouldSpawn(this.spawnFactors.map(function (num) { return num * (5 / 2); }))) {
                 this.spawnBottom();
             }
 
@@ -394,7 +407,7 @@
                 player.body.velocity.x = -700;
             } else if (cursors.right.isDown) {
                 player.body.velocity.x = 700;
-            } 
+            }
 
             if (cursors.up.isDown) {
                 player.body.velocity.y = -500;
@@ -414,7 +427,7 @@
 
             score += 1;
 
-            if(score % 10 == 0) {
+            if (score % 10 === 0) {
                 scoreText.text = calcScore(score);
             }
         },
@@ -430,8 +443,8 @@
 
     game.state.add("Boot", boot);
     game.state.add("Preload", preload);
-    game.state.add("MainMenu",mainMenu);
-    game.state.add("HubRun",hubRun);
+    game.state.add("MainMenu", mainMenu);
+    game.state.add("HubRun", hubRun);
     game.state.add("GameOver", gameOverMenu);
     game.state.start("Boot");
-})();
+}());
