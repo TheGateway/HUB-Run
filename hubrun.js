@@ -129,6 +129,9 @@
     };
 
     boot.prototype = {
+        preload: function() {
+            this.game.load.image('preloaderBar', 'assets/sprites/loading.png');  
+        },
         create: function () {
             this.game.scale.maxWidth = 750;
             this.game.scale.maxHeight = 500;
@@ -165,6 +168,10 @@
             this.game.load.audio('menumusic', scriptdir + 'assets/audio/Hoffipolka Chiptune-mpyuri.mp3');
             
             this.game.load.bitmapFont('silkscreen', 'assets/silkscreen/silkscreen.png', 'assets/silkscreen/silkscreen.fnt');
+            
+            
+            this.game.preloadBar = this.add.sprite(560, 400, 'preloaderBar');
+	        this.game.load.setPreloadSprite(this.game.preloadBar);
         },
         create: function () {
             this.game.state.start("MainMenu");
