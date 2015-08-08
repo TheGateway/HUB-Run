@@ -130,7 +130,7 @@
 
     boot.prototype = {
         preload: function() {
-            this.game.load.image('preloaderBar', 'assets/sprites/loading.png');  
+            this.game.load.image('preloaderBar', scriptdir + 'assets/sprites/loading.png');  
         },
         create: function () {
             this.game.scale.maxWidth = 750;
@@ -167,7 +167,7 @@
             this.game.load.audio('gamemusic', scriptdir + 'assets/audio/Den Nye Profeten-sieken.mp3');
             this.game.load.audio('menumusic', scriptdir + 'assets/audio/Hoffipolka Chiptune-mpyuri.mp3');
             
-            this.game.load.bitmapFont('silkscreen', 'assets/silkscreen/silkscreen.png', 'assets/silkscreen/silkscreen.fnt');
+            this.game.load.bitmapFont('silkscreen', scriptdir + 'assets/silkscreen/silkscreen.png', scriptdir + 'assets/silkscreen/silkscreen.fnt');
             
             
             this.game.preloadBar = this.add.sprite(560, 400, 'preloaderBar');
