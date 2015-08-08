@@ -34,8 +34,8 @@
         }
     }
     
-    game = new Phaser.Game(1500, 1000, Phaser.AUTO, 'hub-run');
-    smallFont = { font: 'Bold 72px Silkscreen', fill: 'white', stroke: 'black', strokeThickness: '9' };
+    game = new Phaser.Game(1500, 1000, Phaser.CANVAS, 'hub-run');
+    smallFont = { font: 'Bold 72px Silkscreen', fill: 'white', stroke: 'black', strokeThickness: '6' };
     
     settings = {
         musicPlaying: true,
@@ -134,7 +134,7 @@
             this.game.scale.maxHeight = 500;
 
             this.game.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
-            this.game.scale.setScreenSize();
+            this.game.scale.updateLayout();
             this.game.state.start("Preload");
         }
     };
@@ -163,6 +163,8 @@
 
             this.game.load.audio('gamemusic', scriptdir + 'assets/audio/Den Nye Profeten-sieken.mp3');
             this.game.load.audio('menumusic', scriptdir + 'assets/audio/Hoffipolka Chiptune-mpyuri.mp3');
+            
+            this.game.load.bitmapFont('silkscreen', 'assets/silkscreen/silkscreen.png', 'assets/silkscreen/silkscreen.fnt');
         },
         create: function () {
             this.game.state.start("MainMenu");
@@ -285,7 +287,7 @@
 
             background = game.add.tileSprite(0, 0, 1500, 1000, 'background');
             player = game.add.sprite(game.world.width / 2 + 200, game.world.height - 300, null);
-            scoreText = game.add.text(game.world.width / 2 - 60, 16, score + "", { font: 'Bold 128px Silkscreen', fill: 'white', stroke: 'black', strokeThickness: '9' });
+            scoreText = game.add.bitmapText(game.world.width / 2 - 60, 16, 'silkscreen', '0' , 128);
             boundboxes = game.add.group();
             downEnemies = game.add.group();
             upEnemies = game.add.group();
@@ -316,6 +318,8 @@
             boundboxes.setAll('body.moves', false);
 
             player.animations.add('walk', [0, 1], 8, true);
+            player.play('walk');
+            player.animations.getAnimation('walk').delay = 180;
 
             downEnemies.enableBody = true;
             upEnemies.enableBody = true;
@@ -335,7 +339,7 @@
             enemy.animations.getAnimation('walk').delay = 180;
             enemy.play('walk');
             enemy.body.moves = false;
-
+            
             this.enemyCounter++;
 
             if (y < 0) {
@@ -378,9 +382,7 @@
             return false;
         },
         update: function () {
-            player.body.velocity.x = 0;
-            player.body.velocity.y = 0;
-
+          
             if (score > 0) {
                 if (score % 600 === 0) {
                     var newSpawnFactor = 80 - this.spawnFactors.length * 10;
@@ -409,11 +411,10 @@
                 this.spawnBottom();
             }
 
-            player.play('walk');
             background.tilePosition.y += 6.0;
-
-            player.animations.getAnimation('walk').delay = 180;
-
+            
+            player.body.velocity.x = 0;
+            
             if (cursors.left.isDown) {
                 player.body.velocity.x = -700;
             } else if (cursors.right.isDown) {
@@ -426,6 +427,9 @@
             } else if (cursors.down.isDown) {
                 player.body.velocity.y = 700;
                 player.animations.getAnimation('walk').delay = 350;
+            } else {
+                player.animations.getAnimation('walk').delay = 180;
+                player.body.velocity.y = 0;
             }
 
             game.physics.arcade.collide(player, downEnemies, null, null, this);
@@ -439,7 +443,7 @@
             score += 1;
 
             if (score % 10 === 0) {
-                scoreText.text = calcScore(score);
+                scoreText.setText(calcScore(score));
             }
         },
         removeEnemy: function (enemy) {
