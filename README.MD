@@ -2,6 +2,8 @@
 
 HUB Run is a game about running through HUB created for The Gateway, the University of Alberta's official campus media and the largest student newspaper in Canada. It's an infinite runner where you get points for surviving. The game is built with [Phaser](http://phaser.io) and should work on all modern browsers, but not mobile.
 
+The game can be seen live at [thegatewayonline.ca/hubrun](http://thegatewayonline.ca/hubrun).
+
 ## How to Play
 
 Arrow keys to run around
