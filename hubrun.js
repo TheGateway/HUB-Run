@@ -325,7 +325,6 @@
             boundboxes.setAll('body.moves', false);
 
             player.animations.add('walk', [0, 1], 8, true);
-            player.play('walk');
             player.animations.getAnimation('walk').delay = 180;
 
             downEnemies.enableBody = true;
@@ -389,6 +388,7 @@
             return false;
         },
         update: function () {
+            player.play('walk');
           
             if (score > 0) {
                 if (score % 600 === 0) {
