@@ -286,8 +286,16 @@
 
     hubRun.prototype = {
         create: function () {
-            var leftBoundbox, rightBoundbox;
+            var leftBoundbox, rightBoundbox, preventedKeys;
             this.spawnFactors = [80];
+            
+            preventedKeys = [
+                Phaser.Keyboard.SPACEBAR,
+                Phaser.Keyboard.UP,
+                Phaser.Keyboard.DOWN,
+                Phaser.Keyboard.LEFT, 
+                Phaser.Keyboard.RIGHT
+            ];
             
             score = 0;
             enemyCounter = 0;
@@ -302,7 +310,7 @@
             gameMusic = game.add.audio('gamemusic', 0.6, true);
             
             cursors = game.input.keyboard.createCursorKeys();
-
+            
             toggleControls(gameMusic, player);
 
             game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -329,6 +337,9 @@
 
             downEnemies.enableBody = true;
             upEnemies.enableBody = true;
+                
+            // Thank you to Abram Hindle for the fix! https://github.com/abramhindle
+            game.input.keyboard.addKeyCapture(preventedKeys);
         },
         spawn: function (enemyGroup, x, y, spriteName, speedFactor) {
             if (spriteName === undefined) {
