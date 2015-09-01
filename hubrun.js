@@ -302,6 +302,8 @@
             gameMusic = game.add.audio('gamemusic', 0.6, true);
             
             cursors = game.input.keyboard.createCursorKeys();
+            // disable arrow keys on the rest of the page
+            game.input.keyboard.addKeyCapture(cursors);
 
             toggleControls(gameMusic, player);
 
