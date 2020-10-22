@@ -241,7 +241,7 @@
             restartText.add(game.add.text(game.world.width / 2 - 300, 530, 'Space - Restart ', smallFont));
             restartText.add(game.add.text(game.world.width / 2 - 300, 650, 'Share your score! ', smallFont));
             
-            creditText.add(game.add.text(190, 820, 'Code: Kevin Schenk ', smallerFont));
+            creditText.add(game.add.text(190, 820, 'Code: Abbie Schenk ', smallerFont));
             creditText.add(game.add.text(190, 850, 'Art: Jessica Hong ', smallerFont));
             creditText.add(game.add.text(190, 890, 'Menu Music: mpyuri CC-BY ', smallerFont));
             creditText.add(game.add.text(190, 920, 'Game Music: sieken CC-BY ', smallerFont));
