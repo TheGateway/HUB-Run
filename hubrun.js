@@ -35,8 +35,8 @@
     }
     
     game = new Phaser.Game(1500, 1000, Phaser.CANVAS, 'hub-run');
-    smallFont = { font: 'Bold 72px Silkscreen', fill: 'white', stroke: 'black', strokeThickness: '6' };
-    
+    smallFont = { font:'72px Silkscreen', fill:'white', stroke:'black', strokeThickness:'6' };
+
     settings = {
         musicPlaying: true,
         playerTexture: 'player_m'
@@ -111,7 +111,7 @@
     
     function createGatewayButton() {
         var gateway = createButton(game.width, game.height,  'gateway_small',  function () {
-            window.open("http://thegatewayonline.ca", "_blank");
+            window.open("https://thegatewayonline.ca", "_blank");
         });
         
         gateway.anchor.setTo(1.0, 1.0);
@@ -167,7 +167,7 @@
             this.game.load.audio('gamemusic', scriptdir + 'assets/audio/Den Nye Profeten-sieken.mp3');
             this.game.load.audio('menumusic', scriptdir + 'assets/audio/Hoffipolka Chiptune-mpyuri.mp3');
             
-            this.game.load.bitmapFont('silkscreen', scriptdir + 'assets/silkscreen/silkscreen.png', scriptdir + 'assets/silkscreen/silkscreen.fnt');
+            this.game.load.bitmapFont('silkscreen', scriptdir + 'assets/silkscreen/silkscreen.png', scriptdir + 'assets/silkscreen/silkscreen.xml');
             
             
             this.game.preloadBar = this.add.sprite(560, 400, 'preloaderBar');
@@ -229,7 +229,7 @@
             
             background = game.add.tileSprite(0, 0, 1500, 1000, 'background');
             logo = game.add.sprite(game.width / 2 - 180, 10, 'logo');
-            smallerFont = { font: 'Bold 24px Silkscreen', fill: 'white', stroke: 'black', strokeThickness: '6' };
+            smallerFont = { font: '36px Silkscreen', fill: 'white', stroke: 'black', strokeThickness: '6' };
             creditText = game.add.group();
             restartText = game.add.group();
             
@@ -237,9 +237,9 @@
 
             toggleControls(menuMusic);
             
-            restartText.add(game.add.text(game.world.width / 2 - 300, 440, 'Score : ' + calcScore(score) + ' ', smallFont));
-            restartText.add(game.add.text(game.world.width / 2 - 300, 530, 'Space - Restart ', smallFont));
-            restartText.add(game.add.text(game.world.width / 2 - 300, 650, 'Share your score! ', smallFont));
+            restartText.add(game.add.text(game.world.width / 2 - 300, 400, 'Score : ' + calcScore(score) + ' ', smallFont));
+            restartText.add(game.add.text(game.world.width / 2 - 300, 490, 'Space - Restart ', smallFont));
+            restartText.add(game.add.text(game.world.width / 2 - 300, 580, 'Share your score! ', smallFont));
             
             creditText.add(game.add.text(190, 820, 'Code: Abbie Schenk ', smallerFont));
             creditText.add(game.add.text(190, 850, 'Art: Jessica Hong ', smallerFont));
@@ -247,14 +247,14 @@
             creditText.add(game.add.text(190, 920, 'Game Music: sieken CC-BY ', smallerFont));
             creditText.add(game.add.text(190, 960, 'Built with Phaser ', smallerFont));
             
-            twitterButton = createButton(game.world.centerX - 95, 850, 'twitter', function () {
+            twitterButton = createButton(game.world.centerX - 65, 750, 'twitter', function () {
                 window.open('https://twitter.com/intent/tweet?text=I%20ran%20' +
                             calcScore(score) + '%20steps%20in%20@The_Gateway\'s%20%23HUBRun!%20' +
                             'Try%20to%20beat%20me%20at%20http://gtwy.ca/hubrun.%20%23UAlberta',
                             '_blank');
             });
             
-            facebookButton = createButton(game.world.centerX + 115, 850, 'facebook', function () {
+            facebookButton = createButton(game.world.centerX + 115, 750, 'facebook', function () {
                 FB.ui({
                     method: 'share',
                     href: 'https://thegatewayonline.ca/hubrun',
